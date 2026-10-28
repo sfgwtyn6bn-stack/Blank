@@ -2743,7 +2743,7 @@ function updateAudio(){
   if (!audio.on || !audio.n) return;
   const n = audio.n, t = audio.ctx.currentTime, aws = boat.aws/0.5144, v = boat.v;
   const near = cine.active ? 0.75 : (cam.mode === 'helm' || cam.mode === 'walk' || cam.mode === 'trim' || cam.mode === 'hike') ? 1 : cam.mode === 'orbit' ? clamp(14/cam.dist, 0.35, 1) : 0.7;
-  const set = (p, val) => p.setTargetAtTime(val, t, 0.12);
+  const set = (p, val) => { if (isFinite(val)) p.setTargetAtTime(val, t, 0.12); };
   set(n.wg.gain, (0.035 + 0.30*Math.pow(aws/18, 2))*(0.6 + 0.4*near)); set(n.wbp.frequency, 260 + aws*28); set(n.wlg.gain, 0.05*Math.pow(aws/15, 2));
   n.whistles.forEach((w, i) => { set(w.g.gain, Math.max(0, aws - 10)*0.004*(0.5 + 0.5*Math.sin(time*0.37 + i*2.1))*near); set(w.b.frequency, w.fq*(1 + 0.03*Math.sin(time*0.21 + i))); });
   set(n.hg.gain, (0.05 + 0.15*Math.min(v/3.5, 1.6))*near); set(n.hlp.frequency, 360 + v*140); set(n.fzg.gain, 0.018*Math.min(v/3, 1.5)*near);
@@ -2770,7 +2770,9 @@ function updateAudio(){
   set(E.eg.gain, (0.10 + 0.12*load)*en); set(E.ebg.gain, (0.16 - 0.08*load)*en*(eng.tilt < 0.5 ? 1 : 0.2)); set(E.ewg.gain, 0.006*load*en);
 }
 // one-shot effects: winch pawls, ratchet block, footsteps, snap hooks, halyard pulls
-function sfx(kind, vol){
+function sfx(kind, vol){ try { sfxRaw(kind, vol); } catch(e){ audioFault(e); } }
+function audioFault(e){ if (!audio.errLogged){ audio.errLogged = true; console.warn('Grand Largue: sound error', e); } }
+function sfxRaw(kind, vol){
   if (!audio.on || !audio.n) return; const V = vol == null ? 1 : vol;
   const ctx = audio.ctx, n = audio.n, t = ctx.currentTime;
   const noise = (f, q, type, g0, dur, start) => { const s = ctx.createBufferSource(); s.buffer = n.white; const bp = ctx.createBiquadFilter(); bp.type = type; bp.frequency.value = f; bp.Q.value = q;
@@ -2883,13 +2885,13 @@ function updateEngine(dt){
   else if (e.state === 'stopping'){ e.rpm = Math.max(0, e.rpm - dt*2500); if (e.rpm <= 0){ e.tilt = Math.min(1, e.tilt + dt/1.1); if (e.tilt >= 1){ e.state = 'off'; } } }
   e.gear = e.state === 'running' && Math.abs(e.throttle) > 0.12 ? Math.sign(e.throttle) : 0;
   if (e.gear !== e.lastGear){ if (e.state === 'running') sfx('clunk'); e.lastGear = e.gear; }
-  if (e.state === 'running'){ const g = e.gear ? (Math.abs(e.throttle) - 0.12)/0.88 : 0, rt = 950 + g*(e.gear < 0 ? 2600 : 4400); e.rpm += (rt - e.rpm)*Math.min(1, dt*2.2); }
+  if (e.state === 'running'){ const g = e.gear ? clamp((Math.abs(e.throttle) - 0.12)/0.88, 0, 1) : 0, rt = 950 + g*(e.gear < 0 ? 2600 : 4400); e.rpm += (rt - e.rpm)*Math.min(1, dt*2.2); }
   e.spin += e.gear*e.rpm/60*6.283*dt*0.45;
   const tiltA = e.tilt*1.85 + Math.sin(time*e.rpm/60*6.283)*0.004*(e.state === 'running' ? 1 : 0);
   motorM = M4.trs(ENG_PIVOT, 0, tiltA, 0);
   propM = M4.mul(motorM, M4.mul(M4.trs(PROP_C, 0, 0, e.spin), M4.trs([-PROP_C[0], -PROP_C[1], -PROP_C[2]], 0, 0, 0)));
 }
-function engineTarget(){ if (eng.state !== 'running' || !eng.gear) return 0; const g = (Math.abs(eng.throttle) - 0.12)/0.88; return eng.gear > 0 ? 2.75*Math.pow(g, 0.8) : -1.55*Math.pow(g, 0.8); }
+function engineTarget(){ if (eng.state !== 'running' || !eng.gear || Math.sign(eng.throttle) !== eng.gear) return 0; const g = clamp((Math.abs(eng.throttle) - 0.12)/0.88, 0, 1); return eng.gear > 0 ? 2.75*Math.pow(g, 0.8) : -1.55*Math.pow(g, 0.8); }
 function buildMotor(){
   const m = [], blk = [], prop = [];
   m.push(...box(-0.17, 0.17, 0.05, 0.42, -0.36, 0.06));                                  // cowling body
@@ -2990,6 +2992,17 @@ function heelShape(a){ a = Math.abs(a)/DEG; if (a < 22) return 0.1; if (a < 50) 
 function jibDrive(){ const st = jibS.state; return (st === 'up' || st === 'hoisting' || st === 'lowering') ? smooth(0.35, 1, jibS.hoist) : 0; }
 function optimalTrims(aa){ const up = 1 - smooth(100, 135, aa); const m = lerp(85, clamp(aa - 18, 2, 85), up), j = lerp(clamp(aa - 22, 6, 60), clamp(aa - 16, 6, 50), up); return [(m - 2)/83, (j - 6)/54]; }
 function updateSim(dt){
+  const snap = {}; for (const k in boat){ const v = boat[k]; if (typeof v === 'number') snap[k] = v; }
+  stepSim(dt);
+  for (const k in snap) if (!isFinite(boat[k])){
+    Object.assign(boat, snap); for (const q in snap) if (!isFinite(boat[q])) boat[q] = 0;
+    boat.v *= 0.5; boat.lat = 0; boat.yawV = 0;
+    boat.M = M4.trs([boat.x, boat.heave, boat.z], boat.h, boat.pitch, boat.heel + boat.rollW); boat.Minv = M4.invert(boat.M);
+    if (!updateSim.warned){ updateSim.warned = true; console.warn('Grand Largue: invalid physics value (' + k + '), step undone'); }
+    return;
+  }
+}
+function stepSim(dt){
   const S = SEA[settings.sea];
   boat.gust += (gustField(boat.x, boat.z) - boat.gust)*Math.min(1, dt*1.5);
   const gust = 1 + 0.05*Math.sin(time*0.11) + 0.035*Math.sin(time*0.37 + 1.3) + 0.02*Math.sin(time*1.13) + boat.gust;
@@ -3022,7 +3035,7 @@ function updateSim(dt){
   const engT = engineTarget(), target = sailT + engT, inGear = eng.gear !== 0;
   const rate = inGear ? (Math.sign(target) !== Math.sign(boat.v) && Math.abs(boat.v) > 0.05 ? 0.42 : 0.3) : (target > boat.v ? 0.2 : 0.11);
   boat.v += (target - boat.v)*rate*dt + Math.sin(boat.pitch)*0.9*dt*Math.min(1, waveDamp(boat.x, boat.z)*1.5);
-  const wash = eng.gear > 0 ? 0.4*(Math.abs(eng.throttle) - 0.12) : 0;
+  const wash = eng.gear > 0 ? 0.4*Math.max(0, Math.abs(eng.throttle) - 0.12) : 0;
   boat.yawRate = (boat.v*0.85 + 0.4*clamp(boat.v/0.8, -1, 1) + 0.12*Math.min(1, drive*3) + wash)*Math.tan(boat.rudder)/4.4;
   // weather helm: heeled past its comfort the boat tries to round up; the helmsman catches most of it, a little late
   const over = Math.max(0, Math.abs(boat.heel)/DEG - S.heel*1.1), roundUp = Math.sign(boat.twa)*over*0.014;
@@ -4781,7 +4794,7 @@ function frame(now){
     rudderM = M4.trs([0, 0.70, L0 - 0.07], -boat.rudder, 0, 0);
     updateJibState(dt); updateMainState(dt); updateEngine(dt); updateTrim(dt); updateDirt(dt); updateMissions(dt); updateCrew(dt); updatePlayer(dt); updateCamera(dt);
     updateMain(mainSail, boat.boom, boat.luffM, boat.wf, time); updateJib(jibSail, boat.jib, boat.luffJ, boat.wf, time);
-    updateDynamic('sheets', sheetsGeo()); updateDynamic('crew', crewGeo()); updateDynamic('tt', telltaleGeo()); updateDynamic('land', landGeo()); updateAudio();
+    updateDynamic('sheets', sheetsGeo()); updateDynamic('crew', crewGeo()); updateDynamic('tt', telltaleGeo()); updateDynamic('land', landGeo()); try { updateAudio(); } catch(e){ audioFault(e); }
     if (envDirty || time - lastEnv > 1.2) renderEnv();
     bakeSunVis(); renderShadow(); renderShadow2(); renderWake();
     const view = M4.lookAt(cam.pos, cam.tgt, cam.up), proj = M4.persp(cam.fov, W/H, cam.near, 30000); lastVP = M4.mul(proj, view);
