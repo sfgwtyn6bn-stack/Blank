@@ -118,6 +118,7 @@ body.cine .cine-bar{height:10.5vh}
 .replay{appearance:none;margin-top:8px;border:1px solid var(--line);background:transparent;border-radius:8px;padding:6px 10px;font-size:14px;cursor:pointer}
 .duo-txt{margin:2px 0 12px;font-size:14px;line-height:1.4;color:var(--ink-dim);max-width:60ch}
 #duoPanel .act{width:100%;justify-content:center;box-sizing:border-box;margin-bottom:8px;white-space:normal;text-align:center}
+#duoPanel a.act{color:inherit;text-decoration:none}
 .duo-list{display:flex;flex-direction:column}
 .duo-or{text-align:center;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink-dim);margin:4px 0 8px}
 .duo-join{display:flex;gap:8px;align-items:stretch;margin-bottom:8px}
@@ -245,6 +246,7 @@ body.cine .engine{opacity:0!important;pointer-events:none!important}
     <div class="duo-status" id="duoStatus"></div>
     <button class="act" id="duoLeave" type="button">Quitter l’équipage</button>
   </div>
+  <div id="duoOut" hidden></div>
   <p class="duo-note" id="duoNote" hidden></p>
 </div>
 
@@ -4818,7 +4820,10 @@ const RESUME = (() => { try { const r = JSON.parse(sessionStorage.getItem('gl-re
 const P2P_LOBBY = { p2p: true, presence: () => Promise.resolve(), peers: () => [], onPeers: () => () => {} };
 const rid = n => { const a = new Uint8Array(n); crypto.getRandomValues(a); return Array.from(a, b => CODE_CH[b % CODE_CH.length]).join(''); };
 const mergeInto = (dst, src) => { for (const k of Object.keys(src)) if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') dst[k] = src[k]; return dst; };
-const crewLink = code => location.href.split('#')[0] + '#bateau-' + code;
+const crewLink = code => (IN_CLAUDE ? ONLINE_URL : location.origin + location.pathname) + '?bateau=' + (SO ? 'so41' : 'first') + '#bateau-' + code;
+// "?duo=capitaine": opened from the Claude version to play with a friend, the boat is crewed straight away
+const AUTO_HOST = !IN_CLAUDE && /[?&]duo=capitaine(&|$)/.test(location.search);
+if (AUTO_HOST) try { history.replaceState(null, '', location.href.replace(/([?&])duo=capitaine&?/, '$1').replace(/[?&](#|$)/, '$1')); } catch(e){}
 function hostSlot(){ try { const s = JSON.parse(localStorage.getItem('grandlargue-crew') || 'null'); if (s && /^[a-z0-9]{4}$/.test(s.code) && /^[a-z0-9]{16}$/.test(s.token)) return s; } catch(e){} return null; }
 function saveHostSlot(s){ try { localStorage.setItem('grandlargue-crew', JSON.stringify({ code: s.code, token: s.token })); } catch(e){} }
 
@@ -4975,8 +4980,7 @@ function p2pJoin(code, role, hostToken){
 
 (async () => {
   let r = null;
-  if (IN_CLAUDE){ try { const C = window.claude; r = C && typeof C.use === 'function' ? await C.use('room') : null; } catch(e){ r = null; } }
-  else if (CAN_P2P) r = P2P_LOBBY;
+  if (!IN_CLAUDE && CAN_P2P) r = P2P_LOBBY;
   net.room = r; if (r && !r.p2p) r.onPeers(() => renderBoats(), () => { net.room = null; renderDuo(); });
   net.ready = true; renderDuo(); maybeAutoJoin();
 })();
@@ -4988,6 +4992,7 @@ function switchBoat(){
 }
 function maybeAutoJoin(){
   if (RESUME && net.ready && net.booted && !net.autoTried && net.room){ net.autoTried = true; if (RESUME.role === 'helm') hostCrew(RESUME.code); else joinCrew(RESUME.code); return; }
+  if (AUTO_HOST && net.ready && net.booted && !net.autoTried && net.room){ net.autoTried = true; duoPanel.hidden = false; duoBtn.setAttribute('aria-expanded', 'true'); panel.hidden = true; hostCrew(); return; }
   if (!LINK_CODE || !net.ready || !net.booted || net.autoTried) return; net.autoTried = true;
   duoPanel.hidden = false; duoBtn.setAttribute('aria-expanded', 'true'); panel.hidden = true;
   if (net.room){ showHint(`Tu rejoins le bateau ${LINK_CODE.toUpperCase()} : le capitaine est à la barre, toi aux voiles et aux amarres.`, 6500); joinCrew(LINK_CODE); }
@@ -5206,6 +5211,9 @@ function renderBoats(){
     b.textContent = `Rejoindre le bateau ${p.presence.boat.toUpperCase()}` + (p.isMe ? ' · ton autre appareil' : ''); b.addEventListener('click', () => joinCrew(p.presence.boat)); list.appendChild(b); }
 }
 function noRoomNote(){
+  if (IN_CLAUDE && ONLINE_URL){ duoNote(''); const a = document.createElement('a'); a.className = 'act go'; a.href = ONLINE_URL + '?duo=capitaine&bateau=' + (SO ? 'so41' : 'first'); a.target = '_blank'; a.rel = 'noopener'; a.textContent = 'Ouvrir le jeu et créer l’équipage';
+    const n = document.createElement('p'); n.className = 'duo-txt'; n.textContent = 'Le lien à envoyer à ton ami s’affiche là-bas. Pour la prochaine fois, garde cette adresse en favori : ' + ONLINE_URL;
+    const box = $('#duoOut'); box.textContent = ''; box.append(a, n); box.hidden = false; return; }
   if (!IN_CLAUDE){ duoNote('Ce navigateur ne permet pas la connexion directe entre deux appareils : ouvre le jeu dans Safari, Chrome ou Firefox à jour.'); return; }
   if (!ONLINE_URL){ duoNote('Ici, le jeu à deux passe par Claude et demande un compte sur les deux appareils. Pour jouer avec un simple lien, ouvre la version en ligne du jeu.'); return; }
   duoNote('Pour jouer à deux avec un simple lien, sans compte, ouvre la version en ligne : '); const a = document.createElement('a'); a.href = ONLINE_URL; a.target = '_blank'; a.rel = 'noopener'; a.textContent = ONLINE_URL; duoNoteEl.append(a);
@@ -5214,7 +5222,9 @@ function renderDuo(){
   const choose = $('#duoChoose'), live = $('#duoLive'), p2p = !!(net.room && net.room.p2p);
   duoBtn.textContent = 'À deux';
   if (net.role){ duoBtn.append(' : '); const b = document.createElement('b'); b.textContent = remote.on ? 'à bord' : 'attente'; duoBtn.append(b); }
-  $('#duoTxt').textContent = p2p || !net.room
+  $('#duoTxt').textContent = IN_CLAUDE
+    ? 'Le jeu à deux se joue sur le site du jeu : ton ami reçoit un simple lien et monte à bord sans compte ni installation. Le capitaine barre, conduit le moteur et entretient le bateau ; l’équipier règle les voiles et amarre.'
+    : p2p || !net.room
     ? 'Crée l’équipage puis envoie le lien à ton ami : il l’ouvre sur son téléphone et monte directement à bord, sans compte ni installation. Le capitaine barre, conduit le moteur et entretient le bateau ; l’équipier règle les voiles, fait le rappel et amarre au taquet.'
     : 'Ouvre ce jeu sur un deuxième appareil (ton téléphone, ou celui d’un ami à qui tu as partagé la page). Le capitaine barre, conduit le moteur et entretient le bateau ; l’équipier règle les voiles, fait le rappel et amarre au taquet.';
   $('#duoTxt').hidden = !!net.role;
