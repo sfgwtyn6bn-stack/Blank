@@ -40,7 +40,7 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
 .ctl{position:absolute;pointer-events:auto;border-radius:50%;background:rgba(255,255,255,.09);border:1.5px solid rgba(255,255,255,.26);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);font-weight:800;letter-spacing:.08em;font-size:15px;display:grid;place-items:center;touch-action:none;bottom:calc(var(--sb) + 22px);transition:background .06s,transform .06s}
 .ctl.down{background:rgba(255,255,255,.3);border-color:#fff;transform:scale(.95)}
 .ctl svg{width:30px;height:30px;fill:#fff}
-#stick{position:absolute;left:14px;bottom:calc(var(--sb) + 22px);width:min(200px,calc(100% - 210px));height:86px;border-radius:43px;pointer-events:auto;touch-action:none;
+#stick{position:absolute;left:14px;bottom:calc(var(--sb) + 22px);width:min(184px,calc(100% - 210px));height:86px;border-radius:43px;pointer-events:auto;touch-action:none;
   background:linear-gradient(90deg,rgba(0,0,0,.5),rgba(40,40,46,.38) 50%,rgba(0,0,0,.5));border:1.5px solid rgba(255,255,255,.22);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
 #stick .ar{position:absolute;top:50%;width:20px;height:20px;margin-top:-10px;fill:rgba(255,255,255,.6);pointer-events:none}
 #stick .ar.l{left:16px}#stick .ar.r{right:16px}
@@ -48,24 +48,22 @@ button{font-family:inherit;color:inherit;background:none;border:0;cursor:pointer
   background:radial-gradient(circle at 40% 35%,#fff,#e4e4e4 60%,#cfcfcf);box-shadow:0 5px 18px rgba(0,0,0,.5);transition:transform .18s cubic-bezier(.3,1.5,.5,1)}
 #stick.active{border-color:rgba(255,255,255,.45)}
 #stick.active #knob{transition:none}
-#bBrake{right:106px;width:74px;height:74px;border-color:rgba(255,90,70,.6)}
-#bGas{right:14px;width:84px;height:84px;border-color:rgba(90,255,150,.55)}
+#bBrake{left:14px;bottom:calc(var(--sb) + 206px);width:66px;height:66px;border-color:rgba(255,90,70,.6)}
+#grip{position:absolute;right:10px;bottom:calc(var(--sb) + 14px);width:172px;height:104px;pointer-events:auto;touch-action:none;border-radius:20px}
+#grip canvas{width:100%;height:100%;display:block}
 .ctl.sm{font-size:12px;letter-spacing:.05em}
-#bNitro{right:18px;bottom:calc(var(--sb) + 116px);width:70px;height:70px;border:0;color:#c8f1ff;
+#bNitro{right:18px;bottom:calc(var(--sb) + 128px);width:70px;height:70px;border:0;color:#c8f1ff;
   background:radial-gradient(circle,rgba(6,16,28,.66) 56%,transparent 57.5%),conic-gradient(#38ccff calc(var(--n,100)*1%),rgba(255,255,255,.14) 0)}
 #bNitro.down{background:radial-gradient(circle,rgba(30,130,230,.8) 56%,transparent 57.5%),conic-gradient(#8ae6ff calc(var(--n,100)*1%),rgba(255,255,255,.14) 0)}
 #bNitro.empty{opacity:.45}
-#bWheel{left:14px;bottom:calc(var(--sb) + 122px);width:70px;height:70px;border-color:rgba(255,200,80,.6)}
-#bDrift{right:22px;bottom:calc(var(--sb) + 198px);width:62px;height:62px;border-color:rgba(200,140,255,.6)}
-#controls.gyro #bDrift{right:26px;bottom:calc(var(--sb) + 210px)}
-#controls.gyro #bNitro{bottom:calc(var(--sb) + 128px)}
-#controls.gyro #bWheel{left:26px;bottom:calc(var(--sb) + 128px)}
+#bWheel{left:14px;bottom:calc(var(--sb) + 128px);width:70px;height:70px;border-color:rgba(255,200,80,.6)}
+#bDrift{right:22px;bottom:calc(var(--sb) + 210px);width:62px;height:62px;border-color:rgba(200,140,255,.6)}
+#controls.gyro #bWheel{left:24px;bottom:calc(var(--sb) + 126px)}
 #nitroFX{position:absolute;inset:0;pointer-events:none;opacity:0;background:radial-gradient(ellipse 78% 62% at 50% 36%,rgba(0,0,0,0) 46%,rgba(40,150,255,.32) 80%,rgba(110,70,255,.55) 100%)}
 #controls.gyro #stick{display:none}
-#controls.gyro #bBrake{left:14px;right:auto;width:94px;height:94px}
-#controls.gyro #bGas{width:94px;height:94px;bottom:calc(var(--sb) + 22px)}
-#controls.autogas #bGas{display:none}
-#controls.autogas:not(.gyro) #bBrake{right:14px;width:86px;height:86px}
+#controls.gyro #bBrake{bottom:calc(var(--sb) + 22px);width:92px;height:92px}
+#controls.autogas #grip{display:none}
+#controls.gyro #gyroInd{left:112px;width:84px;transform:none}
 #gyroInd{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(var(--sb) + 26px);width:150px;pointer-events:auto;display:none;text-align:center}
 #controls.gyro #gyroInd{display:block}
 .gtrack{position:relative;height:6px;border-radius:3px;background:rgba(255,255,255,.18);margin:0 6px}
@@ -146,11 +144,11 @@ input[type=range]{width:150px;accent-color:#fff}
   <div id="controls" class="hidden">
     <div id="stick" aria-label="Direction"><svg class="ar l" viewBox="0 0 24 24"><path d="M16 4 6 12l10 8z"/></svg><svg class="ar r" viewBox="0 0 24 24"><path d="M8 4l10 8-10 8z"/></svg><i id="knob"></i></div>
     <button class="ctl" id="bBrake" data-k="brake">FREIN</button>
-    <button class="ctl" id="bGas" data-k="gas">GAZ</button>
+    <div id="grip" data-k="gas" aria-label="Poignée de gaz"><canvas id="gripCv"></canvas></div>
     <button class="ctl sm" id="bNitro" data-k="nitro">NITRO</button>
     <button class="ctl sm" id="bWheel" data-k="wheelie">WHEELING</button>
     <button class="ctl sm" id="bDrift" data-k="drift">DRIFT</button>
-    <div id="gyroInd"><div class="gtrack"><b></b><i id="gyroDot"></i></div><span>TOUCHER : RECENTRER</span></div>
+    <div id="gyroInd"><div class="gtrack"><b></b><i id="gyroDot"></i></div><span>RECENTRER</span></div>
   </div>
 
   <div id="menu" class="screen">
@@ -881,8 +879,8 @@ function updateStreaks(dt){
 
 /* ================= état du jeu ================= */
 const gearTop=[0,128,168,203,236,268,299];
-const P={s:300,d:6.7,psi:0,v:95/3.6,lean:0,gear:3,rpm:3000,shiftT:0,thr:0,brk:0,steerVis:0,crashed:false,crashT:0,maxV:0,wh:0,whV:0,whT:0,whPts:0,drift:0,driftSide:1,driftT:0,driftPts:0,nitro:1,nitroFX:0,nitroOn:false,nitroWas:false,spdMark:0,shake:0,near:0,score:0,dist:0,combo:0,comboT:0,impact:0,high:false,acc:0,lim:false,camRoll:0,crashSide:1};
-const IN={stick:0,stickOn:false,left:false,right:false,gas:false,brake:false,nitro:false,wheelie:false,drift:false,kN:false,kW:false,kD:false,bSteer:0,gyroRaw:0,gyroSeen:0,keyL:false,keyR:false,keyG:false,keyB:false};
+const P={s:300,d:6.7,psi:0,v:95/3.6,lean:0,gear:3,rpm:3000,shiftT:0,thr:0,brk:0,steerVis:0,crashed:false,crashT:0,maxV:0,whThr:0,whOver:0,wh:0,whV:0,whT:0,whPts:0,drift:0,driftSide:1,driftT:0,driftPts:0,nitro:1,nitroFX:0,nitroOn:false,nitroWas:false,spdMark:0,shake:0,near:0,score:0,dist:0,combo:0,comboT:0,impact:0,high:false,acc:0,lim:false,camRoll:0,crashSide:1};
+const IN={stick:0,stickOn:false,gasVal:0,left:false,right:false,gas:false,brake:false,nitro:false,wheelie:false,drift:false,kN:false,kW:false,kD:false,bSteer:0,gyroRaw:0,gyroSeen:0,keyL:false,keyR:false,keyG:false,keyB:false};
 let state='menu',countT=0,overT=0,simT=0;
 const LANES=[-3.5,0,3.5],OPPL=[-11,-14.5,-18];
 
@@ -939,14 +937,15 @@ function updateTraffic(dt){
 
 /* ---------- moto ---------- */
 function updateBike(dt){
-  const kmh0=P.v*3.6;let thr=0,brk=0,psiT=0;
+  const kmh0=P.v*3.6;let thr=0,brk=0,psiT=0,whCmd=0;
   const play=state==='play'&&!P.crashed;
   const wantN=play&&(IN.nitro||IN.kN)&&P.nitro>.01,wantW=play&&(IN.wheelie||IN.kW),wantD=play&&(IN.drift||IN.kD);
   P.nitroOn=wantN;
   const v=Math.max(P.v,.5),dk=clamp(Math.abs(P.drift)/.45,0,1);
   let psiMax=Math.min(.5,6.4/Math.max(v,6))*(1+.15*dk);if(P.wh>.08)psiMax*=.45;
   if(play){
-    thr=(S.autoGas||IN.gas||IN.keyG||wantN||wantW||wantD)?1:0;brk=(IN.brake||IN.keyB)?1:0;if(brk)thr=0;
+    const gv=IN.gas?IN.gasVal:0;whCmd=IN.gas?gv:IN.keyG?1:.3;
+    thr=Math.max(S.autoGas?1:0,gv,IN.keyG?1:0,(wantN||wantD)?1:0,wantW?whCmd:0);brk=(IN.brake||IN.keyB)?1:0;if(brk)thr=0;
     const u=steerInput(dt);P.steerVis=u;psiT=u*psiMax;
   }else if(!P.crashed){
     const dT=state==='menu'?6.7:0,vT=(state==='menu'?95:112)/3.6;
@@ -983,7 +982,9 @@ function updateBike(dt){
   if(P.thr<.15&&P.rpm>8200&&!P.crashed&&Math.random()<dt*5)sfxPop();
   // wheeling (ressort amorti vers un angle cible)
   let wT=0;
-  if(wantW&&P.v>4){wT=(.5+.06*Math.sin(simT*2.3)+.04*Math.sin(simT*5.7)+(wantN?.3:0))*clamp((380-kmh0)/120,.55,1);}
+  P.whThr=damp(P.whThr,wantW?whCmd:0,7,dt);
+  if(wantW&&P.whThr>.9)P.whOver=Math.min(.35,P.whOver+dt*.06);else P.whOver=Math.max(0,P.whOver-dt*(wantW?.15:1));
+  if(wantW&&P.v>4){wT=(.22+.42*P.whThr+.05*Math.sin(simT*2.3)+.03*Math.sin(simT*5.7)+P.whOver+(wantN?.3:0))*clamp((380-kmh0)/120,.55,1);}
   else if(wantN&&kmh0<170)wT=.14;
   if(brk)wT=0;
   const kS=wT>0?11:16,cD=wT>0?4.2:5.5;
@@ -1286,6 +1287,7 @@ function updateHUD(dt){
   $('dist').textContent=fmtKm(P.dist);
   if(popT>0){popT-=dt;if(popT<=0)$('popup').classList.remove('show');}
   if(S.steer==='gyro'){const u=steerInput(0);$('gyroDot').style.left=(50+u*46)+'%';}
+  drawGrip(state==='play'||state==='count'?P.thr:0,!!IN.gas);
   const nv=Math.round(P.nitro*100);if(nv!==HUDC.n){HUDC.n=nv;const b=$('bNitro');b.style.setProperty('--n',nv);b.classList.toggle('empty',nv<2);}
   const fx=Math.round(P.nitroFX*20)/20;if(fx!==HUDC.fx){HUDC.fx=fx;$('nitroFX').style.opacity=(fx*.85).toFixed(2);}
 }
@@ -1337,7 +1339,7 @@ function syncUI(){
   show('gyroOpts',S.steer==='gyro');
   $('controls').classList.toggle('gyro',S.steer==='gyro');$('controls').classList.toggle('autogas',!!S.autoGas);
   const touch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
-  $('ctlHint').textContent=!touch?'Clavier : ← → pencher · ↑ gaz · ↓ frein · Maj wheeling · N nitro · C drift · H phares':S.steer==='gyro'?'Incline le téléphone pour pencher · NITRO, WHEELING, DRIFT : garde le pouce dessus, ça accélère aussi':'Curseur ◀ ▶ pour pencher · NITRO, WHEELING, DRIFT accélèrent aussi : glisse le pouce depuis GAZ';
+  $('ctlHint').textContent=!touch?'Clavier : ← → pencher · ↑ gaz · ↓ frein · Maj wheeling (+ ↑ pour monter) · N nitro · C drift · H phares':S.steer==='gyro'?'Incline le téléphone pour pencher · Poignée de gaz : pose le pouce et tire vers le bas · WHEELING + gaz = plus haut':'Curseur ◀ ▶ pour pencher · Poignée de gaz : pose le pouce et tire vers le bas · WHEELING + gaz = plus haut';
   for(const n of mirrorGroups)n.visible=!!S.mirrors;
 }
 let prevState='menu';
@@ -1362,14 +1364,56 @@ function bindBtn(id,key){const el=$(id);
   const on=e=>{e.preventDefault();try{el.setPointerCapture(e.pointerId);}catch(_){}IN[key]=true;el.classList.add('down');if(!AU.ctx||AU.ctx.state!=='running')initAudio();};
   const off=()=>{IN[key]=false;el.classList.remove('down');};
   el.addEventListener('pointerdown',on);el.addEventListener('pointerup',off);el.addEventListener('pointercancel',off);el.addEventListener('lostpointercapture',off);el.addEventListener('contextmenu',e=>e.preventDefault());}
-// boutons d'action : on peut glisser le pouce de GAZ vers NITRO, WHEELING ou DRIFT sans lever le doigt
-{const ACT=[...document.querySelectorAll('#controls [data-k]')],KS=['gas','brake','nitro','wheelie','drift'],ptr=new Map();
-  const at=(x,y)=>{let best=null,bd=1e9;for(const b of ACT){if(b.offsetParent===null)continue;const r=b.getBoundingClientRect(),d=Math.hypot(x-(r.left+r.right)/2,y-(r.top+r.bottom)/2);if(d<r.width/2+14&&d<bd){bd=d;best=b.dataset.k;}}return best;};
-  const sync=()=>{const on=new Set(ptr.values());for(const k of KS)IN[k]=on.has(k);for(const b of ACT)b.classList.toggle('down',on.has(b.dataset.k));};
-  for(const b of ACT){b.addEventListener('pointerdown',e=>{e.preventDefault();ptr.set(e.pointerId,b.dataset.k);sync();if(!AU.ctx||AU.ctx.state!=='running')initAudio();});b.addEventListener('contextmenu',e=>e.preventDefault());}
-  window.addEventListener('pointermove',e=>{if(!ptr.has(e.pointerId))return;const k=at(e.clientX,e.clientY);if(k&&k!==ptr.get(e.pointerId)){ptr.set(e.pointerId,k);sync();}});
-  const up=e=>{if(ptr.delete(e.pointerId))sync();};window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);
-  window.__resetPad=()=>{ptr.clear();sync();};}
+// boutons d'action : poignée de gaz analogique ; le pouce peut glisser de la poignée vers NITRO ou DRIFT sans lever le doigt
+{const ACT=[...document.querySelectorAll('#controls [data-k]')],KS=['gas','brake','nitro','wheelie','drift'],ptr=new Map(),gy0=new Map();
+  const at=(x,y)=>{for(const b of ACT){if(b.offsetParent===null)continue;const r=b.getBoundingClientRect(),m=b.id==='grip'?4:10;if(x>=r.left-m&&x<=r.right+m&&y>=r.top-m&&y<=r.bottom+m)return b.dataset.k;}return null;};
+  const sync=()=>{const on=new Set(ptr.values());for(const k of KS)IN[k]=on.has(k);if(!IN.gas)IN.gasVal=0;for(const b of ACT)b.classList.toggle('down',on.has(b.dataset.k));};
+  const gasFrom=(id,y)=>{IN.gasVal=clamp(.3+(y-gy0.get(id))/70,0,1);};
+  for(const b of ACT){b.addEventListener('pointerdown',e=>{e.preventDefault();ptr.set(e.pointerId,b.dataset.k);if(b.dataset.k==='gas'){gy0.set(e.pointerId,e.clientY);gasFrom(e.pointerId,e.clientY);}sync();if(!AU.ctx||AU.ctx.state!=='running')initAudio();});b.addEventListener('contextmenu',e=>e.preventDefault());}
+  window.addEventListener('pointermove',e=>{if(!ptr.has(e.pointerId))return;const k=at(e.clientX,e.clientY);
+    if(k&&k!==ptr.get(e.pointerId)){ptr.set(e.pointerId,k);if(k==='gas')gy0.set(e.pointerId,e.clientY);sync();}
+    if(ptr.get(e.pointerId)==='gas')gasFrom(e.pointerId,e.clientY);});
+  const up=e=>{if(ptr.delete(e.pointerId)){gy0.delete(e.pointerId);sync();}};window.addEventListener('pointerup',up);window.addEventListener('pointercancel',up);
+  window.__resetPad=()=>{ptr.clear();gy0.clear();sync();};}
+// dessin de la poignée de gaz (caoutchouc strié qui tourne avec l'ouverture des gaz)
+const gripCv=$('gripCv'),gctx=gripCv.getContext('2d');let gripLast=-1,gripAct=null;
+function rr2d(c,x,y,w,h,r){c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();}
+function drawGrip(v,act){
+  const el=$('grip'),cw=el.clientWidth,ch=el.clientHeight;if(!cw)return;
+  const dp=Math.min(window.devicePixelRatio||1,3),Wd=Math.round(cw*dp),Hd=Math.round(ch*dp);
+  if(gripCv.width!==Wd||gripCv.height!==Hd){gripCv.width=Wd;gripCv.height=Hd;gripLast=-1;}
+  if(Math.abs(v-gripLast)<.004&&act===gripAct)return;gripLast=v;gripAct=act;
+  const c=gctx,w=172,h=104,gy=60,R=25;c.setTransform(Wd/w,0,0,Hd/h,0,0);c.clearRect(0,0,w,h);
+  rr2d(c,1,1,w-2,h-2,20);c.fillStyle='rgba(0,0,0,.42)';c.fill();c.lineWidth=1.5;c.strokeStyle=act?'rgba(255,255,255,.75)':'rgba(255,255,255,.22)';c.stroke();
+  // jauge d'ouverture
+  c.font='800 12px '+FONT;c.fillStyle='rgba(255,255,255,.78)';c.textAlign='left';c.textBaseline='middle';c.fillText('GAZ',12,14);
+  rr2d(c,44,10,116,8,4);c.fillStyle='rgba(255,255,255,.14)';c.fill();
+  if(v>.005){const g=c.createLinearGradient(44,0,160,0);g.addColorStop(0,'#3ddc84');g.addColorStop(.6,'#ffc21a');g.addColorStop(1,'#ff3b30');rr2d(c,44,10,Math.max(8,116*v),8,4);c.fillStyle=g;c.fill();}
+  // tube de guidon + commodo (coupe-circuit rouge, démarreur)
+  let g=c.createLinearGradient(0,gy-9,0,gy+9);g.addColorStop(0,'#9aa0a8');g.addColorStop(.5,'#e8ebee');g.addColorStop(1,'#5a5f66');c.fillStyle=g;c.fillRect(2,gy-9,12,18);
+  g=c.createLinearGradient(0,gy-30,0,gy+30);g.addColorStop(0,'#3d4046');g.addColorStop(1,'#0c0d0f');rr2d(c,10,gy-30,38,60,10);c.fillStyle=g;c.fill();
+  rr2d(c,19,gy-23,20,13,3);c.fillStyle='#c81e1e';c.fill();c.fillStyle='rgba(255,255,255,.35)';c.fillRect(21,gy-21,16,3);
+  c.beginPath();c.arc(29,gy+12,7.5,0,Math.PI*2);c.fillStyle='#1d1f22';c.fill();c.lineWidth=1.5;c.strokeStyle='#55595f';c.stroke();
+  c.strokeStyle='#d8dde2';c.lineWidth=1.3;c.beginPath();c.arc(29,gy+12,3.2,-1.1,4.25);c.stroke();c.beginPath();c.moveTo(29,gy+7.6);c.lineTo(29,gy+11.5);c.stroke();
+  // collerette
+  g=c.createLinearGradient(0,gy-R,0,gy+R);g.addColorStop(0,'#55585e');g.addColorStop(.5,'#9a9ea5');g.addColorStop(1,'#2a2c30');c.fillStyle=g;rr2d(c,47,gy-R+1,7,R*2-2,2);c.fill();
+  // poignée en caoutchouc : les stries défilent quand on tourne
+  c.save();rr2d(c,53,gy-R,98,R*2,9);c.clip();
+  g=c.createLinearGradient(0,gy-R,0,gy+R);g.addColorStop(0,'#4a4d52');g.addColorStop(.35,'#2c2e31');g.addColorStop(1,'#08080a');c.fillStyle=g;c.fillRect(53,gy-R,98,R*2);
+  const rot=v*1.9,N=18;
+  for(let k=0;k<N;k++){const ph=k/N*Math.PI*2+rot,cz=Math.cos(ph);if(cz<.06)continue;const y=gy+R*Math.sin(ph),lt=.5-.5*Math.sin(ph-.4);
+    c.fillStyle='rgba(0,0,0,'+(.55*cz).toFixed(3)+')';c.fillRect(53,y-1.6*cz-.6,98,3.2*cz+.6);
+    c.fillStyle='rgba(255,255,255,'+(.05+.17*cz*lt).toFixed(3)+')';c.fillRect(53,y-1.6*cz-1.4,98,1);}
+  for(const x of [62,141]){c.fillStyle='rgba(0,0,0,.4)';c.fillRect(x,gy-R,3,R*2);}
+  g=c.createLinearGradient(0,gy-R,0,gy);g.addColorStop(0,'rgba(255,255,255,.13)');g.addColorStop(1,'rgba(255,255,255,0)');c.fillStyle=g;c.fillRect(53,gy-R,98,R);
+  c.restore();
+  // embout de guidon chromé
+  g=c.createLinearGradient(0,gy-18,0,gy+18);g.addColorStop(0,'#f2f4f6');g.addColorStop(.45,'#8d939a');g.addColorStop(.6,'#c9ced3');g.addColorStop(1,'#3b3f44');rr2d(c,150,gy-18,16,36,6);c.fillStyle=g;c.fill();
+  c.beginPath();c.arc(158,gy,3.2,0,Math.PI*2);c.fillStyle='#2b2e32';c.fill();
+  c.textAlign='center';
+  if(v<.03&&!act){c.fillStyle='rgba(255,255,255,.55)';c.font='700 10.5px '+FONT;c.fillText('▼ TIRE VERS LE BAS',102,96);}
+  else{c.fillStyle='rgba(255,255,255,.85)';c.font='800 11px '+FONT;c.fillText(Math.round(v*100)+' %',102,96);}
+}
 // curseur de direction (analogique, revient au centre au relâchement)
 {const st=$('stick'),kn=$('knob');let pid=null;
   const move=e=>{const r=st.getBoundingClientRect(),half=Math.max(20,r.width/2-40);const x=clamp(e.clientX-(r.left+r.width/2),-half,half);
